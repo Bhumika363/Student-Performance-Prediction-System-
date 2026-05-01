@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Detailed Analysis Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet" />
+    <style>body { background-color: #060e20; color: #dee5ff; font-family: 'Manrope'; }</style>
+</head>
+<body class="p-8">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-12 border-b border-slate-800 pb-6">
+            <h1 id="rptName" class="text-5xl font-bold text-white">Student Name</h1>
+            <p id="rptCourse" class="text-blue-400 text-xl mt-2">Course Name</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="bg-[#0c1934] p-8 rounded-2xl border border-slate-800 shadow-xl">
+                <h3 class="text-2xl font-bold mb-6 text-primary">Performance Balance</h3>
+                <div class="aspect-square">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-[#0c1934] p-8 rounded-2xl border border-slate-800 shadow-xl h-full">
+                    <h3 class="text-2xl font-bold mb-6 text-primary">Strategic Recommendations</h3>
+                    <div id="suggestionsList" class="space-y-4">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = JSON.parse(localStorage.getItem('currentReport'));
+        if (!data) { document.body.innerHTML = "<h1>No report data found.</h1>"; }
+
+        document.getElementById('rptName').innerText = data.name;
+        document.getElementById('rptCourse').innerText = data.course;
+
+        // Radar Chart
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Attendance', 'MST 1', 'MST 2', 'Predicted Score'],
+                datasets: [{
+                    label: 'Academic Profile',
+                    data: [data.attendance, (data.mst1/50)*100, (data.mst2/50)*100, (data.score/50)*100],
+                    backgroundColor: 'rgba(49, 107, 243, 0.2)',
+                    borderColor: '#316bf3',
+                    pointBackgroundColor: '#7799ff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        grid: { color: '#1e293b' },
+                        angleLines: { color: '#1e293b' },
+                        pointLabels: { color: '#9baad6', font: { size: 14 } },
+                        ticks: { display: false },
+                        suggestedMin: 0, suggestedMax: 100
+                    }
+                }
+            }
+        });
+
+        // Improvement Logic
+        const list = document.getElementById('suggestionsList');
+        const addTip = (msg, isCritical) => {
+            list.innerHTML += `
+                <div class="p-4 rounded-xl border-l-4 ${isCritical ? 'bg-red-500/10 border-red-500' : 'bg-blue-500/10 border-blue-500'}">
+                    <p class="text-md ${isCritical ? 'text-red-200' : 'text-blue-200'}">${msg}</p>
+                </div>`;
+        };
+
+        if (data.attendance < 75) addTip("🚨 Attendance is critical. You are missing core concepts explained in class.", true);
+        if (data.mst1 < 25 || data.mst2 < 25) addTip("📖 MST performance is weak. Revision of fundamental units is highly recommended.", true);
+        if (data.score >= 40) addTip("🌟 Excellent trajectory. Focus on previous year questions to maintain an A+ grade.", false);
+        else addTip("💡 Strengthening your internal MST scores could have significantly boosted your predicted final grade.", false);
+    </script>
+</body>
+</html>

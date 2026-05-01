@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Academic Curator - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-dim": "#316bf3",
+                        "primary": "#7799ff",
+                        "background": "#060e20",
+                        "surface": "#060e20",
+                        "surface-container": "#0c1934",
+                        "on-surface": "#dee5ff",
+                        "on-surface-variant": "#9baad6",
+                        "outline-variant": "#38476d",
+                        "tertiary": "#8ce7ff"
+                    },
+                    fontFamily: { "headline": ["Manrope"], "body": ["Manrope"] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #060e20; color: #dee5ff; font-family: 'Manrope', sans-serif; }
+        .glass-card { background: rgba(12, 25, 52, 0.6); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+    <nav class="fixed top-0 w-full z-50 bg-slate-950/60 backdrop-blur-xl border-b border-slate-800/50 flex items-center justify-between px-6 h-16">
+        <span class="text-xl font-bold tracking-tighter text-slate-100">Academic Curator</span>
+    </nav>
+
+    <main class="pt-24 px-6 pb-12 min-h-screen">
+        <div class="max-w-4xl mx-auto space-y-8">
+            <header>
+                <h1 class="text-4xl font-extrabold tracking-tight font-headline">Predictive Curating</h1>
+                <p class="text-on-surface-variant text-lg">Leverage academic data to forecast performance.</p>
+            </header>
+
+            <section class="glass-card p-8 rounded-xl border border-outline-variant/15 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        
+                        <span class="material-symbols-outlined text-blue-400">person_add</span> Input Parameters
+                    </h3>
+                    <p>Name</p>
+                    <input id="studentName" class="w-full bg-slate-900 border-0 rounded-lg px-4 py-3" placeholder="Student Name" type="text" />
+                    <p>Course</p>
+                    <input id="studentcourse" class="w-full bg-slate-900 border-0 rounded-lg px-4 py-3" placeholder="Course" type="text" />
+                    <p>Attendance</p>
+                    <input id="attendance" class="w-full bg-slate-900 border-0 rounded-lg px-4 py-3" placeholder="Attendance %" type="number" />
+                    <div class="grid grid-cols-2 gap-4">
+                        <p>MST 1</p>
+                        <input id="mst1" class="w-full bg-slate-900 border-0 rounded-lg px-4 py-3" placeholder="MST 1" type="number" />
+                        <p>MST 2</p>
+                        <input id="mst2" class="w-full bg-slate-900 border-0 rounded-lg px-4 py-3" placeholder="MST 2" type="number" />
+                    </div>
+                    <button id="predictBtn" class="w-full bg-primary-dim text-white font-bold py-4 rounded-xl hover:scale-[0.98] transition-all">Generate Prediction</button>
+                </div>
+
+                <div class="bg-surface-container p-8 rounded-xl border-l-4 border-primary flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-primary mb-6">Prediction Result</h4>
+                        <div class="flex items-baseline gap-2">
+                            <span id="gradeDisplay" class="text-7xl font-extrabold">--</span>
+                            <span class="text-lg text-on-surface-variant">Grade</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm font-medium">Predicted Marks</span>
+                            <span id="scoreDisplay" class="text-xl font-bold text-tertiary">-- / 50</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div id="confidenceBar" class="h-full bg-primary w-[0%] transition-all duration-1000"></div>
+                        </div>
+                        <button id="viewReportBtn" class="w-full hidden mt-4 bg-slate-800 border border-outline-variant/30 text-on-surface py-2 rounded-lg hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-sm">analytics</span> View Detailed Report
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('predictBtn').addEventListener('click', async () => {
+            const studentName = document.getElementById('studentName').value;
+            const studentcourse = document.getElementById('studentcourse').value;
+            const attendance = parseFloat(document.getElementById('attendance').value);
+            const mst1 = parseFloat(document.getElementById('mst1').value);
+            const mst2 = parseFloat(document.getElementById('mst2').value);
+
+            if (!studentName || isNaN(attendance)) return alert("Please fill all fields.");
+
+            try {
+                const response = await fetch('http://localhost:8000/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentName, studentcourse, attendance, mst1, mst2 })
+                });
+
+                const data = await response.json();
+                document.getElementById('gradeDisplay').innerText = data.grade;
+                document.getElementById('scoreDisplay').innerText = `${data.score.toFixed(2)} / 50`;
+                document.getElementById('confidenceBar').style.width = `${(data.score / 50) * 100}%`;
+
+                // Show and configure report button
+                const reportBtn = document.getElementById('viewReportBtn');
+                reportBtn.classList.remove('hidden');
+                reportBtn.onclick = () => {
+                    localStorage.setItem('currentReport', JSON.stringify({
+                        name: studentName, course: studentcourse, 
+                        attendance, mst1, mst2, score: data.score, grade: data.grade
+                    }));
+                    window.open('report.html', '_blank');
+                };
+            } catch (error) { console.error(error); }
+        });
+    </script>
+</body>
+</html>

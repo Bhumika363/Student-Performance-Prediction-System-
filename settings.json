@@ -1,0 +1,13 @@
+{
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.referencedLibraries": [
+        "lib\\mysql-connector-j-9.6.0.jar",
+        "c:\\Users\\bhoom\\OneDrive\\Desktop\\core.jar",
+        "c:\\Users\\bhoom\\OneDrive\\Desktop\\mtj.jar",
+        "c:\\Users\\bhoom\\OneDrive\\Desktop\\arpack_combined.jar",
+        "c:\\Users\\bhoom\\OneDrive\\Desktop\\student prediction\\lib\\weka.jar"
+    ],
+    "liveServer.settings.port": 5502
+}
